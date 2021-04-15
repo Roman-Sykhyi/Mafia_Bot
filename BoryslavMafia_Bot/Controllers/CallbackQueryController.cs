@@ -12,12 +12,12 @@ public static class CallbackQueryController
         switch (type)
         {
             case CallbackQueryType.GameStarter:
-                await GameStarterCallbackQueryReveived(callbackQuery, client);
+                await GameStarterCallbackQueryReceived(callbackQuery, client);
                 break;
         }
     }
 
-    private static async Task GameStarterCallbackQueryReveived(CallbackQuery callbackQuery, TelegramBotClient client)
+    private static async Task GameStarterCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)
     {
             
 

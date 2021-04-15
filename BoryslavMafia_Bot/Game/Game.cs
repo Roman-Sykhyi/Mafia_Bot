@@ -3,14 +3,15 @@ using Telegram.Bot.Types;
 
 public class Game
 {
-    public long ID;
     private List<User> players;
 
     public IReadOnlyList<User> Players { get => players.AsReadOnly(); }
-
-    public Game(long id)
+    public long ID;
+    public Message joinGameMessage;
+    public Game(long id, Message msg)
     {
         ID = id;
+        joinGameMessage = msg;
         players = new List<User>();
     }
 

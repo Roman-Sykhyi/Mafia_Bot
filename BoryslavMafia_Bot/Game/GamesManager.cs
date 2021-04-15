@@ -19,9 +19,9 @@ public static class GamesManager
         return game != null;
     }
 
-    public static void NewGame(long id)
+    public static void NewGame(long id, Message msg)
     {
-        Game game = new Game(id);
+        Game game = new Game(id, msg);
         games.Add(game);
     }
 
