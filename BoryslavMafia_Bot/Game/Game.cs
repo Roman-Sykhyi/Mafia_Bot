@@ -3,21 +3,45 @@ using Telegram.Bot.Types;
 
 public class Game
 {
-    private List<User> players;
-
-    public IReadOnlyList<User> Players { get => players.AsReadOnly(); }
+    public List<Player> Players { get; private set; }
     public long ID;
     public Message joinGameMessage;
     public Game(long id, Message msg)
     {
         ID = id;
         joinGameMessage = msg;
-        players = new List<User>();
+        Players = new List<Player>();
     }
 
-    public void AddPlayer(User player)
+    public void AddPlayer(User user)
     {
-        players.Add(player);
-        GamesManager.currentPlayers.Add(player);
+        var player = new Player(user);
+        
+        Players.Add(player);
+        GamesManager.currentPlayers.Add(player.User);
+    }
+
+    public bool TryStartGame()
+    {
+        if(Players.Count < GameConfiguration.MinimumPlayers)
+        {
+            GamesManager.ForceEndGame(this);
+            return false;
+        }
+        else
+        {
+            StartGame();
+            return true;
+        }
+    }
+
+    private void StartGame()
+    {
+        GiveRoles();
+    }
+
+    private void GiveRoles()
+    {
+
     }
 }

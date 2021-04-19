@@ -15,7 +15,6 @@ public static class MessageController
         var commands = Bot.Commands;
 
         client = await Bot.Get();
-        //await client.SendTextMessageAsync(message.Chat.Id, message.Text);
 
         foreach (var command in commands)
         {

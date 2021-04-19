@@ -25,18 +25,18 @@ public class JoinGameCommand : Command
 
             Console.WriteLine("ID: " + user.Id
                 + " (" + user.FirstName + " " + user.LastName + ") joined game in chat "
-                + groupChatId + " (" + chatName + ")");
+                + groupChatId + " (" + chatName + ")\n");
 
-            Game game = GamesManager.GetGame(long.Parse(groupChatId));
+            Game game = await GamesManager.GetGame(long.Parse(groupChatId));
             game.AddPlayer(user);
 
             var msg = game.joinGameMessage;
 
             #region build edited message
             string editedMessage = "<b>Проводиться набір до гри.</b>\nУчасники: ";
-            foreach(User player in game.Players)
+            foreach(Player player in game.Players)
             {
-                editedMessage += player.FirstName;
+                editedMessage += player.User.FirstName;
                 editedMessage += " ";
             }
             editedMessage = editedMessage.Remove(editedMessage.Length - 1, 1);

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 public static class GamesManager
@@ -7,15 +8,15 @@ public static class GamesManager
     public static List<Game> games { get; private set; } = new List<Game>();
     public static List<User> currentPlayers = new List<User>();
 
-    public static Game GetGame(long id)
+    public static async Task<Game> GetGame(long id)
     {
         var game = games.FirstOrDefault(s => s.ID == id);
         return game;
     }
 
-    public static bool GameExists(long id)
+    public static async Task<bool> GameExists(long id)
     {
-        Game game = GetGame(id);
+        Game game = await GetGame(id);
         return game != null;
     }
 
@@ -25,8 +26,18 @@ public static class GamesManager
         games.Add(game);
     }
 
-    public static bool IsPlayerAlreadyInGame(User player)
+    public static bool IsPlayerAlreadyInGame(User user)
     {
-        return currentPlayers.Contains(player);
+        return currentPlayers.Contains(user);
+    }
+
+    public static void ForceEndGame(Game game)
+    {
+        foreach(Player player in game.Players)
+        {
+            currentPlayers.Remove(player.User);
+        }
+
+        games.Remove(game);
     }
 }

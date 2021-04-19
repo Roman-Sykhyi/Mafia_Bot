@@ -23,7 +23,7 @@ public static class Bot
             return client;
         }
         #region magic
-        client = new TelegramBotClient(Configuration.Key);
+        client = new TelegramBotClient(BotConfiguration.Key);
         var me = await client.GetMeAsync();
         Console.Title = me.Username;
 
@@ -34,7 +34,7 @@ public static class Bot
             new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync),
             CTS.Token
         );
-        Console.WriteLine($"Start listening for @{me.Username}");
+        Console.WriteLine($"Start listening for @{me.Username}\n");
         #endregion
 
         commandsList = new List<Command>();

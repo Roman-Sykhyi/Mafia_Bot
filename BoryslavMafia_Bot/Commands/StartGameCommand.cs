@@ -16,9 +16,9 @@ public class StartGameCommand : Command
 
         if (chatType == ChatType.Group)
         {           
-            if (!GamesManager.GameExists(chatId))
+            if (!(await GamesManager.GameExists(chatId)))
             {
-                StartNewGame(message, client, chatId);
+                InitiateNewGame(message, client, chatId);
             }
             else
             {
@@ -31,9 +31,9 @@ public class StartGameCommand : Command
         }
     }
 
-    private async void StartNewGame(Message message, TelegramBotClient client, long chatId)
+    private async void InitiateNewGame(Message message, TelegramBotClient client, long chatId)
     {
-        var link = string.Format("https://t.me/{0}?start={1}", Configuration.Name, chatId);
+        var link = string.Format("https://t.me/{0}?start={1}", BotConfiguration.Name, chatId);
         var inlineKeyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("Приєднатися до гри", link));
 
         var msg = await client.SendTextMessageAsync
@@ -46,14 +46,15 @@ public class StartGameCommand : Command
 
         GamesManager.NewGame(chatId, msg);
 
-        Console.WriteLine($"New game has been started in chat {chatId}");
+        Console.WriteLine($"New game has been initiated in chat {chatId}\n");
 
-        StartNotifying(msg, client, chatId); 
+        await StartNotifying(msg, client, chatId);
+        await StartGame(client, chatId);
     }
 
-    private async void StartNotifying(Message message, TelegramBotClient client, long chatId)
+    private async Task StartNotifying(Message messageToReply, TelegramBotClient client, long chatId)
     {
-        int remainingTime = 60;
+        int remainingTime = GameConfiguration.TimeToStartGame;
 
         while (remainingTime > 0)
         {
@@ -63,13 +64,31 @@ public class StartGameCommand : Command
             string.Format("Проводиться набір до гри.\n" +
             "До завершення реєстрації <b>{0} секунд</b>", remainingTime),
             parseMode: ParseMode.Html,
-            replyToMessageId: message.MessageId
+            replyToMessageId: messageToReply.MessageId
             );
 
             await Task.Delay(15000);
             remainingTime -= 15;
         }
+    }
 
-        await client.SendTextMessageAsync(chatId, "Реєстрацію завершено");
+    private async Task StartGame(TelegramBotClient client, long chatId)
+    {
+        Game game = await GamesManager.GetGame(chatId);
+        var gameStarted = game.TryStartGame();
+
+        var chat = await client.GetChatAsync(chatId);
+        var chatName = chat.Title;
+
+        if (gameStarted)
+        {
+            await client.SendTextMessageAsync(chatId, "<b>Гра починається</b>", parseMode: ParseMode.Html);
+            Console.WriteLine($"Started game in chat: {chatId} ({chatName})\n");
+        }
+        else
+        {
+            await client.SendTextMessageAsync(chatId, "<b>Недостатньо гравців для початку гри</b>", parseMode: ParseMode.Html);
+            Console.WriteLine($"Not enought players to start game in chat: {chatId} ({chatName}) \nDeleting game instance\n");
+        }
     }
 }

@@ -1,4 +1,4 @@
-public static class Configuration
+public static class BotConfiguration
 {
     public readonly static string Name = "boryslavmafia_debug_bot";
 
