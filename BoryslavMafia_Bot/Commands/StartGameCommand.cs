@@ -83,7 +83,7 @@ public class StartGameCommand : Command
         if (gameStarted)
         {
             await client.SendTextMessageAsync(chatId, "<b>Гра починається</b>", parseMode: ParseMode.Html);
-            Console.WriteLine($"Started game in chat: {chatId} ({chatName})\n");
+            Console.WriteLine($"\nStarted game in chat: {chatId} ({chatName})\n");
         }
         else
         {

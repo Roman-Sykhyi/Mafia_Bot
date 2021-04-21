@@ -36,8 +36,9 @@ public class JoinGameCommand : Command
             string editedMessage = "<b>Проводиться набір до гри.</b>\nУчасники: ";
             foreach(Player player in game.Players)
             {
+                editedMessage += string.Format("<a href=\"tg://user?id={0}\">", player.User.Id);
                 editedMessage += player.User.FirstName;
-                editedMessage += " ";
+                editedMessage += "</a> ";
             }
             editedMessage = editedMessage.Remove(editedMessage.Length - 1, 1);
             editedMessage += "\nВсього учасників: <b>";
