@@ -19,8 +19,6 @@ public static class CallbackQueryController
 
     private static async Task GameStarterCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)
     {
-            
-
         await client.AnswerCallbackQueryAsync(
             callbackQuery.Id,
             $"Received {callbackQuery.Data}"

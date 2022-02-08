@@ -22,6 +22,7 @@ public static class Bot
         {
             return client;
         }
+
         #region magic
         client = new TelegramBotClient(BotConfiguration.Key);
         var me = await client.GetMeAsync();

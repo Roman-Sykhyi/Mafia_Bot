@@ -36,6 +36,8 @@ public class StartGameCommand : Command
         var link = string.Format("https://t.me/{0}?start={1}", BotConfiguration.Name, chatId);
         var inlineKeyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("Приєднатися до гри", link));
 
+        var keyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData(CallbackQueryType.GameStarter.ToString()));
+
         var msg = await client.SendTextMessageAsync
             (
             chatId,
@@ -75,7 +77,7 @@ public class StartGameCommand : Command
     private async Task StartGame(TelegramBotClient client, long chatId)
     {
         Game game = await GamesManager.GetGame(chatId);
-        var gameStarted = game.TryStartGame();
+        var gameStarted = game.TryStartGameAsync().Result;
 
         var chat = await client.GetChatAsync(chatId);
         var chatName = chat.Title;

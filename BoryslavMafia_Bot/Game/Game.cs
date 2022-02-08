@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 public class Game
 {
     public List<Player> Players { get; private set; }
-    public long ID;
-    public Message joinGameMessage;
+    public long Id { get; private set; }
+    public Message joinGameMessage { get; private set; }
     public Game(long id, Message msg)
     {
-        ID = id;
+        Id = id;
         joinGameMessage = msg;
         Players = new List<Player>();
     }
 
-    private Random random = new System.Random();
+    private Random random = new Random();
 
     public void AddPlayer(User user)
     {
@@ -24,7 +25,7 @@ public class Game
         GamesManager.currentPlayers.Add(player.User);
     }
 
-    public bool TryStartGame()
+    public async Task<bool> TryStartGameAsync()
     {
         if(Players.Count < GameConfiguration.MinimumPlayers)
         {
@@ -33,14 +34,50 @@ public class Game
         }
         else
         {
-            StartGame();
+            await StartGameAsync();
             return true;
         }
     }
 
-    private void StartGame()
+    private async Task StartGameAsync()
     {
         GiveRoles();
+        await NotifyPlayersAboutRolesAsync();
+    }
+
+    private async Task NotifyPlayersAboutRolesAsync()
+    {
+        Telegram.Bot.TelegramBotClient client = await Bot.Get();
+
+        foreach (Player player in Players)
+        {
+            string msg = "Ти - <b>";
+            switch (player.Role)
+            {
+                case Role.Citizen:
+                    msg += "Мирний житель";
+                    break;
+                case Role.Doctor:
+                    msg += "Лікар";
+                    break;
+                case Role.Commissar:
+                    msg += "Комісар";
+                    break;
+                case Role.Homeless:
+                    msg += "Безхатько";
+                    break;
+                case Role.Prostitute:
+                    msg += "Повія";
+                    break;
+                case Role.Mafia:
+                    msg += "Мафія";
+                    break;
+            }
+
+            msg += "</b>";
+
+            await client.SendTextMessageAsync(player.User.Id, msg, parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+        }
     }
 
     private void GiveRoles()
@@ -86,7 +123,7 @@ public class Game
 
         playersWithoutRole[index].Role = role;
 
-        Console.WriteLine($"User: {playersWithoutRole[index].User.FirstName} is {playersWithoutRole[index].Role}");
+        Console.WriteLine($"Game {Id} ({joinGameMessage.Chat.Title}): Player - {playersWithoutRole[index].User.FirstName} ({playersWithoutRole[index].User.Id}) is {playersWithoutRole[index].Role}");
 
         playersWithoutRole.RemoveAt(index);
     }

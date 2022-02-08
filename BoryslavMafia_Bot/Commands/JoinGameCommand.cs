@@ -11,7 +11,7 @@ public class JoinGameCommand : Command
     {
         var groupChatId = message.Text.Substring(message.Text.IndexOf(' ') + 1);
 
-        if (groupChatId[0] != '-')
+        if (groupChatId[0] != '-') // all chat ids start with '-'
             return;
 
         var chat = await client.GetChatAsync(groupChatId);
@@ -56,7 +56,7 @@ public class JoinGameCommand : Command
         }
         else
         {
-            await client.SendTextMessageAsync(message.Chat.Id, "Ви вже приєдналися до гри");
+            await client.SendTextMessageAsync(message.Chat.Id, $"Ви вже приєдналися до гри");
         }          
     }
 }

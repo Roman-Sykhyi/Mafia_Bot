@@ -8,13 +8,12 @@ E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\bin\Debug\net5.0\BoryslavMafia_B
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\bin\Debug\net5.0\Newtonsoft.Json.dll
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\bin\Debug\net5.0\Telegram.Bot.dll
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\bin\Debug\net5.0\Telegram.Bot.Extensions.Polling.dll
-E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.csprojAssemblyReference.cache
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.GeneratedMSBuildEditorConfig.editorconfig
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.AssemblyInfoInputs.cache
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.AssemblyInfo.cs
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.csproj.CoreCompileInputs.cache
-E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.csproj.CopyComplete
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.dll
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\ref\BoryslavMafia_Bot.dll
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.pdb
 E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.genruntimeconfig.cache
+E:\Projects\BoryslavMafia_Bot\BoryslavMafia_Bot\obj\Debug\net5.0\BoryslavMafia_Bot.csproj.AssemblyReference.cache

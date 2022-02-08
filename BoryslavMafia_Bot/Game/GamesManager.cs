@@ -10,7 +10,7 @@ public static class GamesManager
 
     public static async Task<Game> GetGame(long id)
     {
-        var game = games.FirstOrDefault(s => s.ID == id);
+        var game = games.FirstOrDefault(s => s.Id == id);
         return game;
     }
 
