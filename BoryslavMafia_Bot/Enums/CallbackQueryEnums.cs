@@ -1,4 +1,5 @@
 ﻿public enum CallbackQueryType
 {
-    GameStarter
+    GameStarter,
+    MafiaPollChooseVictim
 }
