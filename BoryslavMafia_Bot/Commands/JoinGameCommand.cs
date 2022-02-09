@@ -30,7 +30,7 @@ public class JoinGameCommand : Command
             Game game = await GamesManager.GetGame(long.Parse(groupChatId));
             game.AddPlayer(user);
 
-            var msg = game.joinGameMessage;
+            var msg = game.JoinGameMessage;
 
             #region build edited message
             string editedMessage = "<b>Проводиться набір до гри.</b>\nУчасники: ";

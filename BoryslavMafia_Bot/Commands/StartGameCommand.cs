@@ -16,7 +16,7 @@ public class StartGameCommand : Command
 
         if (chatType == ChatType.Group)
         {           
-            if (!(await GamesManager.GameExists(chatId)))
+            if (!await GamesManager.GameExists(chatId))
             {
                 InitiateNewGame(message, client, chatId);
             }
@@ -77,20 +77,25 @@ public class StartGameCommand : Command
     private async Task StartGame(TelegramBotClient client, long chatId)
     {
         Game game = await GamesManager.GetGame(chatId);
-        var gameStarted = game.TryStartGameAsync().Result;
 
         var chat = await client.GetChatAsync(chatId);
         var chatName = chat.Title;
 
-        if (gameStarted)
+        bool canStartGame = game.Players.Count >= GameConfiguration.MinimumPlayers;
+
+        if (canStartGame)
         {
             await client.SendTextMessageAsync(chatId, "<b>Гра починається</b>", parseMode: ParseMode.Html);
             Console.WriteLine($"\nStarted game in chat: {chatId} ({chatName})\n");
+
+            await game.StartGame();
         }
         else
         {
             await client.SendTextMessageAsync(chatId, "<b>Недостатньо гравців для початку гри</b>", parseMode: ParseMode.Html);
             Console.WriteLine($"Not enought players to start game in chat: {chatId} ({chatName}) \nDeleting game instance\n");
+
+            GamesManager.ForceEndGame(game);
         }
     }
 }

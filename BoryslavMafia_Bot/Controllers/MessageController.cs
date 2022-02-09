@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -8,7 +9,20 @@ public static class MessageController
     private static TelegramBotClient client;
     public static async Task BotOnMessageReceived(Message message)
     {
-        //Console.WriteLine($"Receive message type: {message.Type}");
+
+        Game game = await GamesManager.GetGame(message.Chat.Id);
+
+        if(game != null)
+        {
+            Player player = game.AllowedInChat.FirstOrDefault(p => p.User.Id == message.From.Id);
+
+            if (player == null)
+            {
+                await client.DeleteMessageAsync(message.Chat.Id, message.MessageId);
+                return;
+            }
+        }
+
         if (message.Type != MessageType.Text)
             return;
 

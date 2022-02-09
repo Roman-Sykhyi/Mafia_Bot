@@ -1,53 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 public class Game
 {
     public List<Player> Players { get; private set; }
+    public List<Player> AlivePlayers { get; private set; }
+    public List<Player> AllowedInChat { get; private set; }
     public long Id { get; private set; }
-    public Message joinGameMessage { get; private set; }
+    public Message JoinGameMessage { get; private set; }
+
     public Game(long id, Message msg)
     {
         Id = id;
-        joinGameMessage = msg;
+        JoinGameMessage = msg;
         Players = new List<Player>();
+        AlivePlayers = new List<Player>();
+        AllowedInChat = new List<Player>();
     }
 
-    private Random random = new Random();
+    private Random _random = new Random();
+    private ChatPermissions _chatPermissions = new ChatPermissions();
 
     public void AddPlayer(User user)
     {
         var player = new Player(user);
         
         Players.Add(player);
+        AlivePlayers.Add(player);
+        AllowedInChat.Add(player);
         GamesManager.currentPlayers.Add(player.User);
     }
 
-    public async Task<bool> TryStartGameAsync()
-    {
-        if(Players.Count < GameConfiguration.MinimumPlayers)
-        {
-            GamesManager.ForceEndGame(this);
-            return false;
-        }
-        else
-        {
-            await StartGameAsync();
-            return true;
-        }
-    }
-
-    private async Task StartGameAsync()
+    public async Task StartGame()
     {
         GiveRoles();
-        await NotifyPlayersAboutRolesAsync();
+        await NotifyPlayersAboutRoles();
+        await StartGameCycle();
     }
 
-    private async Task NotifyPlayersAboutRolesAsync()
+    private async Task StartGameCycle()
     {
-        Telegram.Bot.TelegramBotClient client = await Bot.Get();
+        TelegramBotClient client = await Bot.Get();
+
+        await SetNight(client);
+    }
+
+    private async Task SetNight(TelegramBotClient client)
+    {
+        DisableChat();
+
+        await Task.Delay(1500);
+
+        string msg = "Місто засинає. Просинається мафія.\nЖиві гравці: ";
+
+        foreach (Player player in Players)
+        {
+            msg += string.Format("<a href=\"tg://user?id={0}\">", player.User.Id);
+            msg += player.User.FirstName;
+            msg += "</a> ";
+        }
+
+        await client.SendTextMessageAsync(Id, msg, parseMode: ParseMode.Html);
+
+        await Task.Delay(5000);
+        EnableChat();
+    }
+
+    private void DisableChat()
+    {
+        AllowedInChat.Clear();
+    }
+
+    private void EnableChat()
+    {
+        foreach (Player player in AlivePlayers)
+        {
+            AllowedInChat.Add(player);
+        }
+    }
+
+    private async Task NotifyPlayersAboutRoles()
+    {
+        TelegramBotClient client = await Bot.Get();
 
         foreach (Player player in Players)
         {
@@ -76,7 +114,7 @@ public class Game
 
             msg += "</b>";
 
-            await client.SendTextMessageAsync(player.User.Id, msg, parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+            await client.SendTextMessageAsync(player.User.Id, msg, parseMode: ParseMode.Html);
         }
     }
 
@@ -119,11 +157,12 @@ public class Game
 
     private void GivePlayerRole(List<Player> playersWithoutRole, Role role)
     {
-        int index = random.Next(0, playersWithoutRole.Count);
+        int index = _random.Next(0, playersWithoutRole.Count);
 
         playersWithoutRole[index].Role = role;
 
-        Console.WriteLine($"Game {Id} ({joinGameMessage.Chat.Title}): Player - {playersWithoutRole[index].User.FirstName} ({playersWithoutRole[index].User.Id}) is {playersWithoutRole[index].Role}");
+        Console.WriteLine($"Game {Id} ({JoinGameMessage.Chat.Title}): Player - {playersWithoutRole[index].User.FirstName} " +
+            $"({playersWithoutRole[index].User.Id}) is {playersWithoutRole[index].Role}");
 
         playersWithoutRole.RemoveAt(index);
     }
