@@ -73,9 +73,33 @@ public class Game
 
         await Task.Delay(1500);
 
-        string msg = "Місто засинає. Просинається мафія.\nЖиві гравці:\n";
+        string msg = "Місто засинає. Просинається мафія.";
 
-        foreach (Player player in Players)
+        await client.SendTextMessageAsync(Id, msg, parseMode: ParseMode.Html);
+
+        await StartMafiasPoll(client);
+
+        while (_mafiaRemainingVotes != 0)
+            await Task.Delay(1000);
+
+        await client.SendTextMessageAsync(Id, "Мафія вибрала жертву");
+
+        // other roles act
+
+        KillVictim();
+
+        await CheckForWin(client);
+
+        await Task.Delay(2000);
+
+        await SetDay(client);      
+    }
+
+    private async Task SetDay(TelegramBotClient client)
+    {
+        string msg = "Мафія засинає. Місто просинається.\nЖиві гравці:\n";
+
+        foreach (Player player in AlivePlayers)
         {
             msg += string.Format("<a href=\"tg://user?id={0}\">", player.User.Id);
             msg += player.User.FirstName + player.User.LastName + " " + player.User.Username;
@@ -84,28 +108,43 @@ public class Game
 
         await client.SendTextMessageAsync(Id, msg, parseMode: ParseMode.Html);
 
-        await SendMafiasPoll(client);
+        await Task.Delay(1000);
 
-        while (_mafiaRemainingVotes != 0)
-            await Task.Delay(1000);
+        EnableChat();
+        await StartDiscussion(client);
 
-        // other roles act
+    }
 
-        KillVictim();
+    private async Task StartDiscussion(TelegramBotClient client)
+    {
+        await client.SendTextMessageAsync(Id, "Час для обговорення");
 
-        if(MafiasCount >= AlivePlayers.Count - MafiasCount)
+        int remainingTime = GameConfiguration.DiscussionTime;
+
+        while (remainingTime > 0)
+        {
+            await client.SendTextMessageAsync(Id, string.Format("До завершення обговорення залишилось <b>{0} секунд</b>", remainingTime),
+                parseMode: ParseMode.Html);
+
+            await Task.Delay(15000);
+            remainingTime -= 15;
+        }
+
+        await client.SendTextMessageAsync(Id, "Обговорення завершено. Час вибирати кого будемо вішати.");
+    }
+
+    private async Task CheckForWin(TelegramBotClient client)
+    {
+        if (MafiasCount >= AlivePlayers.Count - MafiasCount)
         {
             await client.SendTextMessageAsync(Id, "Перемогла мафія");
             GamesManager.ForceEndGame(this);
         }
-        else if(MafiasCount == 0)
+        else if (MafiasCount == 0)
         {
             await client.SendTextMessageAsync(Id, "Перемогли мирні жителі");
             GamesManager.ForceEndGame(this);
         }
-
-        await Task.Delay(5000);
-        EnableChat();
     }
 
     private void KillVictim()
@@ -123,7 +162,7 @@ public class Game
         _playerSurvived = false;
     }
 
-    private async Task SendMafiasPoll(TelegramBotClient client)
+    private async Task StartMafiasPoll(TelegramBotClient client)
     {
         _mafiaRemainingVotes = MafiasCount;
 

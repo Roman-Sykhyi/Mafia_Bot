@@ -30,7 +30,6 @@ public static class CallbackQueryController
 
         User user = GamesManager.currentPlayers.Find(p => p.Id == int.Parse(callbackData[1]));
         string msgText = "Ви вибрали: " + user.FirstName + " " + user.LastName + " " + user.Username;
-
         await client.SendTextMessageAsync(callbackQuery.From.Id, msgText);
 
         Game game = await GamesManager.GetGame(long.Parse(callbackData[2]));
