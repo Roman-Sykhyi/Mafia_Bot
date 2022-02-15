@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 public static class CallbackQueryController
 {
@@ -17,6 +18,9 @@ public static class CallbackQueryController
             case CallbackQueryType.MafiaPollChooseVictim:
                 await MafiaChooseVictimCallBackQueryReceived(callbackQuery, client);
                 break;
+            case CallbackQueryType.PlayersChooseLynchVictim:
+                await PlayersChooseLynchVictimCallbackQueryReceived(callbackQuery, client);
+                break;
         }
     }
 
@@ -24,16 +28,34 @@ public static class CallbackQueryController
     {
         string[] callbackData = callbackQuery.Data.Split();
 
-        int messageId = callbackQuery.Message.MessageId;
-
-        await client.DeleteMessageAsync(callbackQuery.From.Id, messageId);
+        await client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
 
         User user = GamesManager.currentPlayers.Find(p => p.Id == int.Parse(callbackData[1]));
         string msgText = "Ви вибрали: " + user.FirstName + " " + user.LastName + " " + user.Username;
         await client.SendTextMessageAsync(callbackQuery.From.Id, msgText);
 
         Game game = await GamesManager.GetGame(long.Parse(callbackData[2]));
-        game.GiveVoteForVictim(user);
+        game.GiveVoteForMafiaVictim(user);
+    }
+
+    private static async Task PlayersChooseLynchVictimCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)
+    {
+        string[] callbackData = callbackQuery.Data.Split();
+
+        await client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+
+        User user = GamesManager.currentPlayers.Find(p => p.Id == int.Parse(callbackData[1]));
+
+        string msgText = $"Ви вибрали: <a href=\"tg://user?id={user.Id}\">" + user.FirstName + " " + user.LastName + " " + user.Username + "</a>";
+        await client.SendTextMessageAsync(callbackQuery.From.Id, msgText, parseMode:ParseMode.Html);
+
+        string msgTextGroup = $"<a href=\"tg://user?id={callbackQuery.From.Id}\">" +
+            $"{callbackQuery.From.FirstName} {callbackQuery.From.LastName} {callbackQuery.From.Username}</a> голосує за " +
+            $"<a href=\"tg://user?id={user.Id}\">{user.FirstName} {user.LastName} {user.Username}</a>";
+        await client.SendTextMessageAsync(long.Parse(callbackData[2]), msgTextGroup, parseMode:ParseMode.Html);
+
+        Game game = await GamesManager.GetGame(long.Parse(callbackData[2]));
+        game.GiveVoteForLynchVictim(user);
     }
 
     private static async Task GameStarterCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)

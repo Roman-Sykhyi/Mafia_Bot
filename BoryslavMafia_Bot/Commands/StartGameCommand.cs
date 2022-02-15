@@ -29,6 +29,8 @@ public class StartGameCommand : Command
         {
             await client.SendTextMessageAsync(chatId, "Цю команду можна використовувати тільки в груповому чаті");
         }
+
+        await client.DeleteMessageAsync(chatId, message.MessageId);
     }
 
     private async void InitiateNewGame(Message message, TelegramBotClient client, long chatId)
