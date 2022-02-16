@@ -2,5 +2,7 @@
 {
     GameStarter,
     MafiaPollChooseVictim,
-    PlayersChooseLynchVictim
+    PlayersChooseLynchVictim,
+    DoctorHealPlayer,
+    CommisarCheckPlayer
 }

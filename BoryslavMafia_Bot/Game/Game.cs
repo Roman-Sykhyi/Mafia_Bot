@@ -24,8 +24,10 @@ public class Game
     private Dictionary<Player, int> _mafiasPoll = new Dictionary<Player, int>();
     private int _mafiaRemainingVotes;
     private Player _lastNightKilledPlayer;
-    private Player _lastNightHealedPlayer;
     private bool _playerSurvived;
+
+    private Player _lastNightHealedPlayer;
+    private bool _doctorHealed = false;
 
     private Dictionary<Player, int> _playersLynchVoting = new Dictionary<Player, int>();
     private Player _lastDayLynchedPlayer;
@@ -74,6 +76,12 @@ public class Game
         _playersRemainingVotes--;
     }
 
+    public void HealPlayer(User user)
+    {
+        _lastNightHealedPlayer = AlivePlayers.FirstOrDefault(p => p.User.Id == user.Id);
+        _doctorHealed = true;
+    }
+
     private async Task StartGameCycle()
     {
         TelegramBotClient client = await Bot.Get();
@@ -101,6 +109,13 @@ public class Game
 
         await client.SendTextMessageAsync(Id, "<b>Мафія вибрала жертву</b>", parseMode:ParseMode.Html);
 
+        await DoctorHealPlayer(client);
+
+        while (!_doctorHealed)
+            await Task.Delay(1000);
+
+        await client.SendTextMessageAsync(Id, "<b>Лікар вибрав кого лікувати</b>", parseMode: ParseMode.Html);
+        
         // other roles act
 
         KillVictim();
@@ -159,6 +174,36 @@ public class Game
         await CheckForWin(client);
 
         await SetNight(client);
+    }
+
+    private async Task DoctorHealPlayer(TelegramBotClient client)
+    {
+        _doctorHealed = false;
+        Player doctor = AlivePlayers.FirstOrDefault(p => p.Role == Role.Doctor);
+
+        if(doctor == null)
+        {
+            int timeToWait = _random.Next(3000, 7000);
+            await Task.Delay(timeToWait);
+            _doctorHealed = true;
+        }
+        else
+        {
+            List<List<InlineKeyboardButton>> doctorKeyboard = new List<List<InlineKeyboardButton>>();
+
+            foreach (Player player in AlivePlayers)
+            {
+                if (player.Role != Role.Doctor)
+                {
+                    string name = player.User.FirstName + " " + player.User.LastName + " " + player.User.Username;
+                    string callbackData = CallbackQueryType.DoctorHealPlayer.ToString() + " " + player.User.Id + " " + Id;
+                    doctorKeyboard.Add(new List<InlineKeyboardButton> { InlineKeyboardButton.WithCallbackData(name, callbackData) });
+                }
+            }
+
+            var keyboard = new InlineKeyboardMarkup(doctorKeyboard);
+            await client.SendTextMessageAsync(doctor.User.Id, "<b>Кого будемо лікувати?</b>", parseMode: ParseMode.Html, replyMarkup: keyboard);
+        }
     }
 
     private void LynchPlayer()

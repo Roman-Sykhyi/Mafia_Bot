@@ -21,7 +21,33 @@ public static class CallbackQueryController
             case CallbackQueryType.PlayersChooseLynchVictim:
                 await PlayersChooseLynchVictimCallbackQueryReceived(callbackQuery, client);
                 break;
+            case CallbackQueryType.DoctorHealPlayer:
+                await DoctorHealPlayerCallbackQueryReceived(callbackQuery, client);
+                break;
+            case CallbackQueryType.CommisarCheckPlayer:
+                await CommisarCheckPlayerCallbackQueryReceived(callbackQuery, client);
+                break;
         }
+    }
+
+    private static async Task CommisarCheckPlayerCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static async Task DoctorHealPlayerCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)
+    {
+        string[] callbackData = callbackQuery.Data.Split();
+
+        await client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+
+        User user = GamesManager.currentPlayers.Find(p => p.Id == int.Parse(callbackData[1]));
+
+        string msgText = $"Ви вибрали: <a href=\"tg://user?id={user.Id}\">" + user.FirstName + " " + user.LastName + " " + user.Username + "</a>";
+        await client.SendTextMessageAsync(callbackQuery.From.Id, msgText, parseMode: ParseMode.Html);
+
+        Game game = await GamesManager.GetGame(long.Parse(callbackData[2]));
+        game.HealPlayer(user);
     }
 
     private static async Task MafiaChooseVictimCallBackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)
@@ -31,8 +57,8 @@ public static class CallbackQueryController
         await client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
 
         User user = GamesManager.currentPlayers.Find(p => p.Id == int.Parse(callbackData[1]));
-        string msgText = "Ви вибрали: " + user.FirstName + " " + user.LastName + " " + user.Username;
-        await client.SendTextMessageAsync(callbackQuery.From.Id, msgText);
+        string msgText = $"Ви вибрали: <a href=\"tg://user?id={user.Id}\">" + user.FirstName + " " + user.LastName + " " + user.Username + "</a>";
+        await client.SendTextMessageAsync(callbackQuery.From.Id, msgText, parseMode: ParseMode.Html);
 
         Game game = await GamesManager.GetGame(long.Parse(callbackData[2]));
         game.GiveVoteForMafiaVictim(user);
