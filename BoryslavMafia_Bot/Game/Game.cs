@@ -90,7 +90,7 @@ public class Game
 
         await Task.Delay(1500);
 
-        string msg = "Місто засинає. Просинається мафія";
+        string msg = "<b>Місто засинає. Просинається мафія</b>";
 
         await client.SendTextMessageAsync(Id, msg, parseMode: ParseMode.Html);
 
@@ -99,7 +99,7 @@ public class Game
         while (_mafiaRemainingVotes != 0)
             await Task.Delay(1000);
 
-        await client.SendTextMessageAsync(Id, "Мафія вибрала жертву");
+        await client.SendTextMessageAsync(Id, "<b>Мафія вибрала жертву</b>", parseMode:ParseMode.Html);
 
         // other roles act
 
@@ -118,12 +118,12 @@ public class Game
             return;
 
         if (_playerSurvived)
-            await client.SendTextMessageAsync(Id, "Цієї ночі всі залишились живими");
+            await client.SendTextMessageAsync(Id, "<b>Цієї ночі всі залишились живими</b>", parseMode:ParseMode.Html);
         //else
         //   await client.SendTextMessageAsync(Id, $"Цієї ночі було вбито " +
         //        $"{_lastNightKilledPlayer.User.FirstName} {_lastNightKilledPlayer.User.LastName} {_lastNightKilledPlayer.User.Username}");
 
-        string msg = "Мафія засинає. Місто просинається\nЖиві гравці:\n";
+        string msg = "<b>Мафія засинає. Місто просинається</b>\n<b>Живі гравці:</b>\n";
 
         foreach (Player player in AlivePlayers)
         {
@@ -151,7 +151,7 @@ public class Game
 
         LynchPlayer();
 
-        await client.SendTextMessageAsync(Id, $"Жителі вирішили повісити <a href=\"tg://user?id={_lastDayLynchedPlayer.User.Id}\"> {_lastDayLynchedPlayer.User.FirstName} {_lastDayLynchedPlayer.User.LastName} {_lastDayLynchedPlayer.User.Username}</a>",
+        await client.SendTextMessageAsync(Id, $"<b>Жителі вирішили повісити</b> <a href=\"tg://user?id={_lastDayLynchedPlayer.User.Id}\">{_lastDayLynchedPlayer.User.FirstName} {_lastDayLynchedPlayer.User.LastName} {_lastDayLynchedPlayer.User.Username}</a>",
             parseMode: ParseMode.Html);
 
         await Task.Delay(1000);
@@ -183,13 +183,13 @@ public class Game
         }
 
         var keyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("Перейти до голосування", "t.me/boryslavmafia_debug_bot")); 
-        await client.SendTextMessageAsync(Id, "Обговорення завершено. Час вибирати кого будемо вішати.", replyMarkup: keyboard);
+        await client.SendTextMessageAsync(Id, "<b>Обговорення завершено. Час вибирати кого будемо вішати</b>", parseMode:ParseMode.Html, replyMarkup: keyboard);
     }
 
     private async Task SendLynchPoll(TelegramBotClient client, Player player)
     {
         var keyboard = new InlineKeyboardMarkup(BuildLynchPoll(player));
-        await client.SendTextMessageAsync(player.User.Id, "Виберіть кого будемо вішати", replyMarkup:keyboard);
+        await client.SendTextMessageAsync(player.User.Id, "<b>Виберіть кого будемо вішати</b>", parseMode:ParseMode.Html, replyMarkup:keyboard);
     }
 
     private List<List<InlineKeyboardButton>> BuildLynchPoll(Player player)
@@ -211,7 +211,7 @@ public class Game
 
     private async Task StartDiscussion(TelegramBotClient client)
     {
-        await client.SendTextMessageAsync(Id, "Час для обговорення");
+        await client.SendTextMessageAsync(Id, "<b>Час для обговорення</b>");
 
         int remainingTime = GameConfiguration.DiscussionTime;
 
@@ -229,16 +229,53 @@ public class Game
     {
         if (MafiasCount >= AlivePlayers.Count - MafiasCount)
         {
-            await client.SendTextMessageAsync(Id, "Перемогла мафія");
+            await client.SendTextMessageAsync(Id, "<b>Перемогла мафія<b>", parseMode:ParseMode.Html);
             GamesManager.ForceEndGame(this);
             gameEnded = true;
+            await ShowPlayerRoles(client);
         }
         else if (MafiasCount == 0)
         {
-            await client.SendTextMessageAsync(Id, "Перемогли мирні жителі");
+            await client.SendTextMessageAsync(Id, "<b>Перемогли мирні жителі</b>", parseMode: ParseMode.Html);
             GamesManager.ForceEndGame(this);
             gameEnded = true;
+            await ShowPlayerRoles(client);
         }
+    }
+
+    private async Task ShowPlayerRoles(TelegramBotClient client)
+    {
+        string msg = "<b>Учасники гри:</b>\n";
+
+        foreach (Player player in Players)
+        {
+            msg += $"<a href=\"tg://user?id={player.User.Id}\">{player.User.FirstName} {player.User.LastName} {player.User.Username}</a> - ";
+            switch (player.Role)
+            {
+                case Role.Citizen:
+                    msg += "Мирний житель";
+                    break;
+                case Role.Doctor:
+                    msg += "Лікар";
+                    break;
+                case Role.Commissar:
+                    msg += "Комісар";
+                    break;
+                case Role.Homeless:
+                    msg += "Безхатько";
+                    break;
+                case Role.Prostitute:
+                    msg += "Повія";
+                    break;
+                case Role.Mafia:
+                    msg += "Мафія";
+                    break;
+            }
+            msg += "\n";
+        }
+
+
+        await client.SendTextMessageAsync(Id, msg, parseMode: ParseMode.Html);
     }
 
     private void KillVictim()
@@ -275,7 +312,7 @@ public class Game
         {
             if(player.Role == Role.Mafia)
             {
-                await client.SendTextMessageAsync(player.User.Id, "Виберіть жертву:", replyMarkup: keyboard);
+                await client.SendTextMessageAsync(player.User.Id, "<b>Виберіть жертву:</b>", parseMode:ParseMode.Html, replyMarkup: keyboard);
             }
         }
     }
