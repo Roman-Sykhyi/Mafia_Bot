@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -24,7 +25,7 @@ public static class CallbackQueryController
             case CallbackQueryType.DoctorHealPlayer:
                 await DoctorHealPlayerCallbackQueryReceived(callbackQuery, client);
                 break;
-            case CallbackQueryType.CommisarCheckPlayer:
+            case CallbackQueryType.CommissarCheckPlayer:
                 await CommisarCheckPlayerCallbackQueryReceived(callbackQuery, client);
                 break;
         }
@@ -32,7 +33,44 @@ public static class CallbackQueryController
 
     private static async Task CommisarCheckPlayerCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)
     {
-        throw new NotImplementedException();
+        string[] callbackData = callbackQuery.Data.Split();
+
+        await client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+
+        Game game = await GamesManager.GetGame(long.Parse(callbackData[2]));
+        Player playerToCheck = game.AlivePlayers.FirstOrDefault(p => p.User.Id == int.Parse(callbackData[1]));
+
+        string msgText = $"Ви вибрали: <a href=\"tg://user?id={playerToCheck.User.Id}\">" + playerToCheck.User.FirstName + " " + playerToCheck.User.LastName + " " + playerToCheck.User.Username + "</a>";
+        await client.SendTextMessageAsync(callbackQuery.From.Id, msgText, parseMode: ParseMode.Html);
+
+        await Task.Delay(1000);
+
+        string msg = $"<a href=\"tg://user?id={playerToCheck.User.Id}\">{playerToCheck.User.FirstName} {playerToCheck.User.LastName} {playerToCheck.User.Username}</a> - ";
+        switch (playerToCheck.Role)
+        {
+            case Role.Citizen:
+                msg += "Мирний житель";
+                break;
+            case Role.Doctor:
+                msg += "Лікар";
+                break;
+            case Role.Commissar:
+                msg += "Комісар";
+                break;
+            case Role.Homeless:
+                msg += "Безхатько";
+                break;
+            case Role.Prostitute:
+                msg += "Повія";
+                break;
+            case Role.Mafia:
+                msg += "Мафія";
+                break;
+        }
+
+        await client.SendTextMessageAsync(callbackQuery.From.Id, msg, parseMode:ParseMode.Html);
+
+        game.CommissarCheckedPlayer();
     }
 
     private static async Task DoctorHealPlayerCallbackQueryReceived(CallbackQuery callbackQuery, TelegramBotClient client)

@@ -29,6 +29,8 @@ public class Game
     private Player _lastNightHealedPlayer;
     private bool _doctorHealed = false;
 
+    private bool _commissarCheckedPlayer = false;
+
     private Dictionary<Player, int> _playersLynchVoting = new Dictionary<Player, int>();
     private Player _lastDayLynchedPlayer;
     private int _playersRemainingVotes;
@@ -82,6 +84,11 @@ public class Game
         _doctorHealed = true;
     }
 
+    public void CommissarCheckedPlayer()
+    {  
+        _commissarCheckedPlayer = true;
+    }
+
     private async Task StartGameCycle()
     {
         TelegramBotClient client = await Bot.Get();
@@ -115,7 +122,18 @@ public class Game
             await Task.Delay(1000);
 
         await client.SendTextMessageAsync(Id, "<b>Лікар вибрав кого лікувати</b>", parseMode: ParseMode.Html);
-        
+
+
+        if(Players.Count >= GameConfiguration.CommisarPlayersRequired)
+        {
+            await CommissarCheckPlayer(client);
+
+            while (!_commissarCheckedPlayer)
+                await Task.Delay(1000);
+
+            await client.SendTextMessageAsync(Id, "<b>Комісар провів перевірку</b>", parseMode: ParseMode.Html);
+        }
+
         // other roles act
 
         KillVictim();
@@ -125,6 +143,37 @@ public class Game
         await Task.Delay(2000);
 
         await SetDay(client);      
+    }
+
+    private async Task CommissarCheckPlayer(TelegramBotClient client)
+    {
+        _commissarCheckedPlayer = false;
+
+        Player commissar = AlivePlayers.FirstOrDefault(p => p.Role == Role.Commissar);
+
+        if (commissar == null)
+        {
+            int timeToWait = _random.Next(3000, 7000);
+            await Task.Delay(timeToWait);
+            _commissarCheckedPlayer = true;
+        }
+        else
+        {
+            List<List<InlineKeyboardButton>> commissarKeyboard = new List<List<InlineKeyboardButton>>();
+
+            foreach (Player player in AlivePlayers)
+            {
+                if (player.Role != Role.Commissar)
+                {
+                    string name = player.User.FirstName + " " + player.User.LastName + " " + player.User.Username;
+                    string callbackData = CallbackQueryType.CommissarCheckPlayer.ToString() + " " + player.User.Id + " " + Id;
+                    commissarKeyboard.Add(new List<InlineKeyboardButton> { InlineKeyboardButton.WithCallbackData(name, callbackData) });
+                }
+            }
+
+            var keyboard = new InlineKeyboardMarkup(commissarKeyboard);
+            await client.SendTextMessageAsync(commissar.User.Id, "<b>Кого будемо перевіряти?</b>", parseMode: ParseMode.Html, replyMarkup: keyboard);
+        }
     }
 
     private async Task SetDay(TelegramBotClient client)

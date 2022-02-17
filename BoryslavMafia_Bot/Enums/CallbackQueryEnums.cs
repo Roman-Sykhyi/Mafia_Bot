@@ -4,5 +4,5 @@
     MafiaPollChooseVictim,
     PlayersChooseLynchVictim,
     DoctorHealPlayer,
-    CommisarCheckPlayer
+    CommissarCheckPlayer
 }
