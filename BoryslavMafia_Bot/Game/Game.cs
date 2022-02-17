@@ -183,9 +183,9 @@ public class Game
 
         if (_playerSurvived)
             await client.SendTextMessageAsync(Id, "<b>Цієї ночі всі залишились живими</b>", parseMode:ParseMode.Html);
-        //else
-        //   await client.SendTextMessageAsync(Id, $"Цієї ночі було вбито " +
-        //        $"{_lastNightKilledPlayer.User.FirstName} {_lastNightKilledPlayer.User.LastName} {_lastNightKilledPlayer.User.Username}");
+        else
+           await client.SendTextMessageAsync(Id, $"Цієї ночі було вбито " +
+                $"{_lastNightKilledPlayer.User.FirstName} {_lastNightKilledPlayer.User.LastName} {_lastNightKilledPlayer.User.Username}");
 
         string msg = "<b>Мафія засинає. Місто просинається</b>\n<b>Живі гравці:</b>\n";
 
