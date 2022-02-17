@@ -95,7 +95,7 @@ public class Game
     {
         TelegramBotClient client = await Bot.Get();
 
-        await SetDay(client);
+        await SetNight(client);
     }
 
     private async Task SetNight(TelegramBotClient client)
@@ -244,12 +244,12 @@ public class Game
 
             foreach (Player player in AlivePlayers)
             {
-                if (player.Role != Role.Doctor)
-                {
+                //if (player.Role != Role.Doctor)
+                //{
                     string name = player.User.FirstName + " " + player.User.LastName + " " + player.User.Username;
                     string callbackData = CallbackQueryType.DoctorHealPlayer.ToString() + " " + player.User.Id + " " + Id;
                     doctorKeyboard.Add(new List<InlineKeyboardButton> { InlineKeyboardButton.WithCallbackData(name, callbackData) });
-                }
+                //}
             }
 
             var keyboard = new InlineKeyboardMarkup(doctorKeyboard);
@@ -307,7 +307,7 @@ public class Game
 
     private async Task StartDiscussion(TelegramBotClient client)
     {
-        await client.SendTextMessageAsync(Id, "<b>Час для обговорення</b>");
+        await client.SendTextMessageAsync(Id, "<b>Час для обговорення</b>", parseMode:ParseMode.Html);
 
         int remainingTime = GameConfiguration.DiscussionTime;
 
@@ -323,9 +323,9 @@ public class Game
 
     private async Task CheckForWin(TelegramBotClient client)
     {
-        if (MafiasCount >= AlivePlayers.Count - MafiasCount)
+        if (MafiasCount < AlivePlayers.Count - MafiasCount)
         {
-            await client.SendTextMessageAsync(Id, "<b>Перемогла мафія<b>", parseMode:ParseMode.Html);
+            await client.SendTextMessageAsync(Id, "<b>Перемогла мафія</b>", parseMode:ParseMode.Html);
             GamesManager.ForceEndGame(this);
             gameEnded = true;
             await ShowPlayerRoles(client);
@@ -377,7 +377,7 @@ public class Game
     {
         Player playerToKill = _mafiasPoll.FirstOrDefault(x => x.Value == _mafiasPoll.Values.Max()).Key;
 
-        if(playerToKill == _lastNightHealedPlayer)
+        if(playerToKill.User.Id == _lastNightHealedPlayer.User.Id)
         {
             _playerSurvived = true;
             return;
@@ -483,6 +483,7 @@ public class Game
         int mafiasCount = playersWithoutRole.Count / GameConfiguration.PlayersPerMafia; // визначаємо скільки має бути мафій (на 4 людини - 1 мафія)
 
         GivePlayerRole(playersWithoutRole, Role.Mafia); //for test
+        GivePlayerRole(playersWithoutRole, Role.Doctor);
 
         //GivePlayerRole(playersWithoutRole, Role.Doctor);
 
