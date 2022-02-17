@@ -15,6 +15,8 @@ public class Game
     public List<Player> AllowedInChat { get; private set; }
     public Message JoinGameMessage { get; private set; }
 
+    public bool IsMafiaVoting { get; private set; }
+
     private int MafiasCount { get { return Players.FindAll(p => p.Role == Role.Mafia).Count; } }
     private int AliveMafiasCount { get { return AlivePlayers.FindAll(p => p.Role == Role.Mafia).Count; } }
 
@@ -114,6 +116,7 @@ public class Game
         while (_mafiaRemainingVotes != 0)
             await Task.Delay(1000);
 
+        IsMafiaVoting = false;
         await client.SendTextMessageAsync(Id, "<b>Мафія вибрала жертву</b>", parseMode:ParseMode.Html);
 
         await DoctorHealPlayer(client);
@@ -122,7 +125,6 @@ public class Game
             await Task.Delay(1000);
 
         await client.SendTextMessageAsync(Id, "<b>Лікар вибрав кого лікувати</b>", parseMode: ParseMode.Html);
-
 
         if(Players.Count >= GameConfiguration.CommisarPlayersRequired)
         {
@@ -368,7 +370,6 @@ public class Game
             msg += "\n";
         }
 
-
         await client.SendTextMessageAsync(Id, msg, parseMode: ParseMode.Html);
     }
 
@@ -391,6 +392,7 @@ public class Game
     {
         _mafiasPoll.Clear();
         _mafiaRemainingVotes = AliveMafiasCount;
+        IsMafiaVoting = true;
 
         foreach (var item in Players)
         {
@@ -480,7 +482,7 @@ public class Game
 
         int mafiasCount = playersWithoutRole.Count / GameConfiguration.PlayersPerMafia; // визначаємо скільки має бути мафій (на 4 людини - 1 мафія)
 
-        GivePlayerRole(playersWithoutRole, Role.Mafia);
+        GivePlayerRole(playersWithoutRole, Role.Mafia); //for test
 
         //GivePlayerRole(playersWithoutRole, Role.Doctor);
 

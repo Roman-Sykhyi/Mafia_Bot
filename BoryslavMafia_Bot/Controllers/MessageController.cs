@@ -14,12 +14,34 @@ public static class MessageController
 
         if(game != null)
         {
-            Player player = game.AllowedInChat.FirstOrDefault(p => p.User.Id == message.From.Id);
-
-            if (player == null)
+            if (game.IsMafiaVoting)
             {
-                await client.DeleteMessageAsync(message.Chat.Id, message.MessageId);
-                return;
+                Player sender = game.AlivePlayers.FirstOrDefault(p => p.User.Id == message.From.Id);
+
+                if (sender != null)
+                {
+                    if (sender.Role == Role.Mafia)
+                    {
+                        var mafias = game.AlivePlayers.FindAll(p => p.Role == Role.Mafia);
+                        var mafiaSender = mafias.Find(p => p.User.Id == sender.User.Id);
+                        mafias.Remove(mafiaSender);
+
+                        foreach (var mafia in mafias)
+                        {
+                            await client.SendTextMessageAsync(mafia.User.Id, $"{mafia.User.FirstName} {mafia.User.LastName} {mafia.User.Username}: <i>{message.Text}</i>", parseMode:ParseMode.Html);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Player player = game.AllowedInChat.FirstOrDefault(p => p.User.Id == message.From.Id);
+
+                if (player == null)
+                {
+                    await client.DeleteMessageAsync(message.Chat.Id, message.MessageId);
+                    return;
+                }
             }
         }
 
