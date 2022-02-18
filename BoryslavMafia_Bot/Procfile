@@ -1,1 +1,1 @@
-cd $HOME/heroku_output && ./BoryslavMafia_Bot
+console: cd $HOME/heroku_output && ./BoryslavMafia_Bot
