@@ -126,7 +126,7 @@ public class Game
 
         await client.SendTextMessageAsync(Id, "<b>Лікар вибрав кого лікувати</b>", parseMode: ParseMode.Html);
 
-        if(Players.Count >= GameConfiguration.CommisarPlayersRequired)
+        if(Players.Count >= GameConfiguration.CommissarPlayersRequired)
         {
             await CommissarCheckPlayer(client);
 
@@ -244,12 +244,12 @@ public class Game
 
             foreach (Player player in AlivePlayers)
             {
-                //if (player.Role != Role.Doctor)
-                //{
+                if (player.Role != Role.Doctor)
+                {
                     string name = player.User.FirstName + " " + player.User.LastName + " " + player.User.Username;
                     string callbackData = CallbackQueryType.DoctorHealPlayer.ToString() + " " + player.User.Id + " " + Id;
                     doctorKeyboard.Add(new List<InlineKeyboardButton> { InlineKeyboardButton.WithCallbackData(name, callbackData) });
-                //}
+                }
             }
 
             var keyboard = new InlineKeyboardMarkup(doctorKeyboard);
@@ -323,7 +323,7 @@ public class Game
 
     private async Task CheckForWin(TelegramBotClient client)
     {
-        if (MafiasCount < AlivePlayers.Count - MafiasCount)
+        if (MafiasCount >= AlivePlayers.Count - MafiasCount)
         {
             await client.SendTextMessageAsync(Id, "<b>Перемогла мафія</b>", parseMode:ParseMode.Html);
             GamesManager.ForceEndGame(this);
@@ -377,7 +377,7 @@ public class Game
     {
         Player playerToKill = _mafiasPoll.FirstOrDefault(x => x.Value == _mafiasPoll.Values.Max()).Key;
 
-        if(playerToKill.User.Id == _lastNightHealedPlayer.User.Id)
+        if(playerToKill == _lastNightHealedPlayer)
         {
             _playerSurvived = true;
             return;
@@ -482,25 +482,22 @@ public class Game
 
         int mafiasCount = playersWithoutRole.Count / GameConfiguration.PlayersPerMafia; // визначаємо скільки має бути мафій (на 4 людини - 1 мафія)
 
-        GivePlayerRole(playersWithoutRole, Role.Mafia); //for test
         GivePlayerRole(playersWithoutRole, Role.Doctor);
 
-        //GivePlayerRole(playersWithoutRole, Role.Doctor);
+        //if(Players.Count >= GameConfiguration.HomelessPlayersRequired)
+        //{
+        //    GivePlayerRole(playersWithoutRole, Role.Homeless);
+        //}
 
-        if(Players.Count >= GameConfiguration.HomelessPlayersRequired)
-        {
-            GivePlayerRole(playersWithoutRole, Role.Homeless);
-        }
-
-        if(Players.Count >= GameConfiguration.CommisarPlayersRequired)
+        if(Players.Count >= GameConfiguration.CommissarPlayersRequired)
         {
             GivePlayerRole(playersWithoutRole, Role.Commissar);
         }
 
-        if(Players.Count >= GameConfiguration.ProstitutePlayersRequired)
-        {
-            GivePlayerRole(playersWithoutRole, Role.Prostitute);
-        }
+        //if(Players.Count >= GameConfiguration.ProstitutePlayersRequired)
+        //{
+        //    GivePlayerRole(playersWithoutRole, Role.Prostitute);
+        //}
 
         //TODO: add more roles here if needed
 
