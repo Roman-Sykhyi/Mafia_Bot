@@ -12,6 +12,7 @@ public static class Program
 
         Console.ReadLine();
         // Send cancellation request to stop bot
+        await Task.Delay(int.MaxValue);
         Bot.CTS.Cancel();
     }      
 }
