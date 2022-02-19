@@ -278,7 +278,7 @@ public class Game
             await SendLynchPoll(client, player);
         }
 
-        var keyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("Перейти до голосування", "t.me/boryslavmafia_debug_bot")); 
+        var keyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("Перейти до голосування", $"t.me/{BotConfiguration.Name}")); 
         await client.SendTextMessageAsync(Id, "<b>Обговорення завершено. Час вибирати кого будемо вішати</b>", parseMode:ParseMode.Html, replyMarkup: keyboard);
     }
 
