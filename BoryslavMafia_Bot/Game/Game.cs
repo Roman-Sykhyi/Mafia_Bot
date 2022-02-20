@@ -323,14 +323,14 @@ public class Game
 
     private async Task CheckForWin(TelegramBotClient client)
     {
-        if (MafiasCount >= AlivePlayers.Count - MafiasCount)
+        if (AliveMafiasCount >= AlivePlayers.Count - AliveMafiasCount)
         {
             await client.SendTextMessageAsync(Id, "<b>Перемогла мафія</b>", parseMode:ParseMode.Html);
             GamesManager.ForceEndGame(this);
             gameEnded = true;
             await ShowPlayerRoles(client);
         }
-        else if (MafiasCount == 0)
+        else if (AliveMafiasCount == 0)
         {
             await client.SendTextMessageAsync(Id, "<b>Перемогли мирні жителі</b>", parseMode: ParseMode.Html);
             GamesManager.ForceEndGame(this);
